@@ -1,0 +1,61 @@
+from PIL import Image
+import numpy as np
+
+im = Image.open('s2200.jpg')
+im.show()
+
+widthNew = im.size[0]
+heightNew = im.size[1]
+print("width new = ", widthNew)
+print("height new = ", heightNew)
+
+pix = np.array(im, dtype='int')
+arr = np.array(im)
+m = 0
+for i in range(0, heightNew):
+    for j in range(0, widthNew):
+        S = (pix[i][j][0] + pix[i][j][1] + pix[i][j][2]) // 3
+        if S > m:
+            m = S
+        pix[i][j] = [S, S, S]
+
+m = 0
+mx = 0
+my = 0
+for i in range(1, heightNew - 1):
+    for j in range(1, widthNew - 1):
+        Gx = pix[i][j][0] - pix[i][j+1][0]
+        Gy = pix[i][j][0] - pix[i+1][j][0]
+        G = int((Gx**2 + Gy**2) ** 0.5)
+        if G > m:
+            m = G
+        if Gx > mx:
+            mx = Gx
+        if Gy > my:
+            my = Gy
+        pix[i][j] = [G, G, G]
+#print(m)
+
+black = 0
+k = m//2
+while black < heightNew*widthNew//4:
+    black = 0
+    white = 0
+    for i in range(0, heightNew):
+        for j in range(0, widthNew):
+            if pix[i][j][0] > k:
+                arr[i][j] = [0, 0, 0]
+                black = black + 1
+            else:
+                arr[i][j] = [255, 255, 255]
+                white = white + 1
+    if black > heightNew*widthNew//6:
+        k = k - 1
+    else:
+        k = k - 5
+    print("Black = ", black)
+    print("White = ", white)
+
+im = Image.fromarray(arr)
+im.save('s2200new.jpg')
+im.show()
